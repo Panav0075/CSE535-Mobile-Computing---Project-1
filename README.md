@@ -1,5 +1,6 @@
-<h1>1.	Imagine you are new to the programming world and not proficient enough in coding. But, you have a brilliant idea where you want to develop a context-sensing application like Project 1. You come across the Heath-Dev paper and want it to build your application. Specify what Specifications you should provide to the Health-Dev framework to develop the code ideally?
-Solution:</h1>
+<h3>1.	Imagine you are new to the programming world and not proficient enough in coding. But, you have a brilliant idea where you want to develop a context-sensing application like Project 1. You come across the Heath-Dev paper and want it to build your application. Specify what Specifications you should provide to the Health-Dev framework to develop the code ideally?
+
+  Solution:</h3>
 
 As a newcomer to the programming world, I'd be thrilled to use the Health-Dev framework to develop my context-sensing application. To provide the necessary specifications to the Health-Dev framework, I'll break down my requirements into the following categories:
 Sensor Specification:
@@ -46,8 +47,9 @@ Additional Requirements:
 2.	Data Storage: I want to store the collected data on the smart phone for later analysis.
 By providing these specifications to the Health-Dev framework, I hope to generate the necessary code to develop my context-sensing application.
 
-<h1>2.	In Project 1 you have stored the user’s symptoms data in the local server. Using the bHealthy application suite how can you provide feedback to the user and develop a novel application to improve context sensing and use that to generate the model of the user?
-Solution:</h1>
+<h3>2.	In Project 1 you have stored the user’s symptoms data in the local server. Using the bHealthy application suite how can you provide feedback to the user and develop a novel application to improve context sensing and use that to generate the model of the user?
+
+  Solution:</h3>
 To provide feedback to the user and develop a novel application to improve context sensing, I can leverage the bHealthy application suite and integrate it with the Health-Dev framework. Here's a possible approach:
 Feedback Mechanism:
 1.	Data Analysis: Use the stored symptoms data in the local server to analyze the user's health trends and patterns.
@@ -81,8 +83,9 @@ Example Model:
 3.	Graph Neural Network: Train a GNN to predict the user's health outcomes based on the graph structure and node embeddings.
 By integrating the bHealthy application suite with the Health-Dev framework, I can develop a novel application that provides personalized feedback to the user and generates a comprehensive model of their health. This model can be used to predict health outcomes, identify potential health risks, and provide targeted interventions to improve the user's overall well-being.
 
-<h1>3.	A common assumption is mobile computing is mostly about app development. After completing Project 1 and reading both papers, have your views changed? If yes, what do you think mobile computing is about and why? If no, please explain why you still think mobile computing is mostly about app development, providing examples to support your viewpoint.
-Solution:</h1>
+<h3>3.	A common assumption is mobile computing is mostly about app development. After completing Project 1 and reading both papers, have your views changed? If yes, what do you think mobile computing is about and why? If no, please explain why you still think mobile computing is mostly about app development, providing examples to support your viewpoint.
+
+  Solution:</h3>
 After completing Project 1 and reading both papers, my views on mobile computing have indeed changed. I no longer believe that mobile computing is mostly about app development. Here's why:
 Mobile Computing is about Context-Aware Systems:
 Mobile computing is not just about developing apps, but about creating context-aware systems that can sense and respond to the user's environment, behavior, and needs. The bHealthy application suite and the Health-Dev framework demonstrate this concept by using physiological feedback, activity recognition, and environmental sensing to provide personalized recommendations and interventions.
