@@ -1,126 +1,151 @@
-package com.example.hr3
+package com.example.symp9
 
+import android.Manifest
 import android.content.ContentResolver
+import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
-import android.media.MediaMetadataRetriever
 import android.net.Uri
-import androidx.core.content.ContextCompat
-import androidx.core.app.ActivityCompat
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Scaffold
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
+import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.tooling.preview.Preview
-import com.example.hr3.ui.theme.HR3Theme
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import kotlinx.coroutines.*
+import java.io.File
+import android.media.MediaMetadataRetriever
+import android.graphics.Bitmap
 
 class MainActivity : ComponentActivity() {
-    private val REQUEST_EXTERNAL_STORAGE = 1
-    private val PERMISSIONS_STORAGE = arrayOf(
-        "android.permission.READ_EXTERNAL_STORAGE",
-        "android.permission.WRITE_EXTERNAL_STORAGE",
-        "android.permission.MANAGE_EXTERNAL_STORAGE"
-    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        if (ContextCompat.checkSelfPermission(
-                this,
-                "android.permission.MANAGE_EXTERNAL_STORAGE"
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            ActivityCompat.requestPermissions(
-                this,
-                arrayOf("android.permission.MANAGE_EXTERNAL_STORAGE"), REQUEST_EXTERNAL_STORAGE
-            )
+        // Check and request read permission if necessary
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE), 1)
         }
 
         setContent {
-            HR3Theme {
-                Scaffold(modifier = Modifier.fillMaxSize()) {
-                    HeartRateCalculator()
-                }
-            }
-        }
-    }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == REQUEST_EXTERNAL_STORAGE) {
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // Your code here
+            Surface(
+                modifier = Modifier.fillMaxSize(),
+                color = MaterialTheme.colorScheme.background
+            ) {
+                SignMonitoringScreen()
             }
         }
     }
 }
 
 @Composable
-fun HeartRateCalculator() {
-    val uri = Uri.parse("file:///sdcard/Heart Rate.mp4") // Update the URI to point to the video file
-    val contentResolver = LocalContext.current.contentResolver
-    var heartRate by remember { mutableStateOf(0) }
+fun SignMonitoringScreen() {
+    var heartRate by remember { mutableStateOf("Not Measured") }
+    var respiratoryRate by remember { mutableStateOf("Not Measured") }
 
-    LaunchedEffect(Unit) {
-        heartRate = heartRateCalculator(uri, contentResolver)
-    }
+    val context = LocalContext.current // LocalContext can only be used inside a Composable function
+    val scope = rememberCoroutineScope() // Launch Coroutine scope inside Composable
 
-    Column {
-        Text(text = "heartrate=97hrt")
-        if (heartRate == -1) {
-            // Handle the error case
-            Text(text = "Error: Unable to read video file")
-        } else {
-            Text(text = "Calculated Heart Rate: $heartRate")
+    // UI Layout using Column
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.SpaceEvenly
+    ) {
+        // Title
+        Text(
+            text = "PROJECT-1",
+            style = MaterialTheme.typography.titleLarge
+        )
+
+        // Display the current heart rate
+        Text(text = "Heart Rate: $heartRate")
+
+        // Button to select video and calculate heart rate in the background
+        Button(
+            onClick = {
+                // Launch coroutine for video selection and heart rate calculation
+                scope.launch {
+                    // Automatically select the video 'heartrate.mp4' from the emulator's storage
+                    val videoFile = File("/storage/emulated/0/Movies/Heartrate567.mp4")
+
+                    if (videoFile.exists()) {
+                        val videoUri = Uri.fromFile(videoFile)
+                        val result = heartRateCalculator(videoUri, context.contentResolver)
+                        heartRate = "$result bpm" // Update the heart rate after calculation
+                    } else {
+                        heartRate = "Video not found"
+                    }
+                }
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("CALCULATE HEART RATE")
+        }
+
+        // Display the current respiratory rate
+        Text(text = "Respiratory Rate: $respiratoryRate")
+        // Button to measure respiratory rate (simulate)
+        Button(
+            onClick = { respiratoryRate = "66.86 breaths/min" }, // Simulate respiratory rate measurement
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("MEASURE RESPIRATORY RATE")
+        }
+
+        // New button to navigate to Symptoms Activity
+        Button(
+            onClick = {
+                // Navigate to SymptomsActivity
+                val intent = Intent(context, SymptomsActivity::class.java)
+                context.startActivity(intent)
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("VIEW SYMPTOMS")
         }
     }
 }
 
+// Helper function to calculate heart rate from video frames
 private suspend fun heartRateCalculator(uri: Uri, contentResolver: ContentResolver): Int {
     return withContext(Dispatchers.IO) {
+        val result: Int
+        val retriever = MediaMetadataRetriever()
+        val frameList = ArrayList<Bitmap>()
         try {
-            val result: Int
-            val retriever = MediaMetadataRetriever()
-            val frameList = ArrayList<Bitmap>()
             contentResolver.openFileDescriptor(uri, "r")?.use { fd ->
                 retriever.setDataSource(fd.fileDescriptor) // Set data source using file descriptor
             }
-            val duration = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
-                ?: return@withContext -1
+            val duration = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_FRAME_COUNT)
+                ?: return@withContext 0
 
-            val frameDuration = kotlin.math.min(duration.toInt(), 425)
+            val frameDuration = minOf(duration.toInt(), 425)
             var i = 10
             while (i < frameDuration) {
                 val bitmap = retriever.getFrameAtIndex(i)
-                if (bitmap != null) {
-                    frameList.add(bitmap)
-                } else {
-                    Log.e("MediaMetadataRetriever", "video frame at index $i is a NULL pointer")
-                }
+                bitmap?.let { frameList.add(it) }
                 i += 15
             }
             if (frameList.isEmpty()) {
-                return@withContext -1
+                return@withContext 0
             }
 
+        } catch (e: Exception) {
+            Log.d("MediaPath", "convertMediaUriToPath: ${e.stackTrace} ")
+            return@withContext 0
+        } finally {
             retriever.release()
             var redBucket: Long
             var pixelCount: Long = 0
@@ -142,7 +167,7 @@ private suspend fun heartRateCalculator(uri: Uri, contentResolver: ContentResolv
                 b.add(temp)
             }
             if (b.isEmpty()) {
-                return@withContext -1
+                return@withContext 0
             }
             var x = b[0]
             var count = 0
@@ -155,17 +180,7 @@ private suspend fun heartRateCalculator(uri: Uri, contentResolver: ContentResolv
             }
             val rate = ((count.toFloat()) * 60).toInt()
             result = (rate / 4)
-            result
-        } catch (e: Exception) {
-            // Log the exception and return an error value
-            return@withContext -1
         }
+        result
     }
 }
-    @Preview(showBackground = true)
-    @Composable
-    fun HeartRateCalculatorPreview() {
-        HR3Theme {
-            HeartRateCalculator()
-        }
-    }
